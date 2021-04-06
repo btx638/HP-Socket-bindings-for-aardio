@@ -26,8 +26,7 @@ sendSmallFile = function(filename, head, tail){
 socketBufferSize = {
     _get = function(){
     	return _dll.HP_TcpClient_GetSocketBufferSize(owner.pSocket);
-    }
-    
+    };    
     _set = function(v){
     	_dll.HP_TcpClient_SetSocketBufferSize(owner.pSocket, v);
     } 
@@ -36,8 +35,7 @@ socketBufferSize = {
 keepAliveTime = {
     _get = function(){
     	return _dll.HP_TcpClient_GetKeepAliveTime(owner.pSocket);
-    }
-    
+    };    
     _set = function(v){
     	_dll.HP_TcpClient_SetKeepAliveTime(owner.pSocket, v);
     } 
@@ -46,8 +44,7 @@ keepAliveTime = {
 keepAliveInterval = {
     _get = function(){
     	return _dll.HP_TcpClient_GetKeepAliveInterval(owner.pSocket);
-    }
-    
+    };    
     _set = function(v){
     	_dll.HP_TcpClient_SetKeepAliveInterval(owner.pSocket, v);
     } 

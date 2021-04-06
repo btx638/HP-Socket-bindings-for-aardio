@@ -14,6 +14,11 @@ class listener{
 					global.import(owner.componentClassPath);
 					__componentClass__ = eval(owner.componentClassPath);
 
+
+					if(owner.threadGlobal){
+						..table.mix(global, owner.threadGlobal);
+						owner.threadGlobal = null;
+					}
 					if(owner.onThreadCreated){
 						owner.onThreadCreated();
 						owner.onThreadCreated = null;
@@ -26,6 +31,7 @@ class listener{
 				callback = callback;
 				componentClassPath = "aaz.libhpsocket." ++ this.componentClassPath;
 				onThreadCreated = this.onThreadCreated;
+				threadGlobal = this.threadGlobal;
 			});	
 	};
 }
