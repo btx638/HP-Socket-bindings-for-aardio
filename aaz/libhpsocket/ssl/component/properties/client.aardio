@@ -34,14 +34,21 @@ isSSLAutoHandShake = {
     } 
 }
 
+// ciphers 调整可以增加兼容性
+// https://kb.parallels.com/en/124732
+// openssl 1.0.2 https://www.openssl.org/docs/man1.0.2/man1/ciphers.htm
+// openssl 1.1.0 https://www.openssl.org/docs/man1.1.0/man1/ciphers.html
+// openssl 1.1.1 https://www.openssl.org/docs/man1.1.1/man1/ciphers.html
+// 5.6 ALL:!aNULL:!eNULL
+// 5.8 DEFAULT:!aNULL:!eNULL:!SSLv2:!SSLv3
+// 中间值 DEFAULT:!aNULL:!eNULL:!SSLv2
 sslCipherList = {
     _get = function(){
     	var p = _dll.HP_SSLClient_GetSSLCipherListP(owner.pSocket)
     	if(p){
     		return ..raw.str(p,true); 	
     	}
-    }
-
+    };
     _set = function(v){
     	_dll.HP_SSLClient_SetSSLCipherListW(owner.pSocket, v);
     } 

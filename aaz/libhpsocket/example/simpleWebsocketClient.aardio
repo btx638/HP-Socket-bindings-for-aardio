@@ -30,10 +30,14 @@ ws.onMessage = function(msg){
 	io.print("接收", msg);
 }
 
-ws.listen();
-
+/*
 ws.origin = "http://coolaf.com";
 ws.connect("ws://123.207.136.134:9010/ajaxchattest");
+*/
+
+
+ws.origin = "https://www.websocket.org";
+ws.connect("wss://echo.websocket.org");
 
 winform.button.oncommand = function(id,event){
 	io.print( "发送", ws.send(winform.edit.text) );

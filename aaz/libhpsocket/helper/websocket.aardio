@@ -16,7 +16,7 @@ getSecAccept = function(data){
 }
 
 genSecKey = function(){
-	return ..crypt.bin.encodeBase64(..string.random(16) );
+	return ..crypt.bin.encodeBase64(..string.random(16));
 }
 
 genHeaders = function(host, origin, baseHeaders){
@@ -28,8 +28,9 @@ genHeaders = function(host, origin, baseHeaders){
 		["Host"] = host; 
 		["Origin"] = origin;
 		["Sec-WebSocket-Version"] = "13";
-		["Sec-WebSocket-Protocol"]  = "chat";
+	//	["Sec-WebSocket-Protocol"]  = "chat";
 		["Sec-WebSocket-Key"] = key; 
+		["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36";
 	)
 	return headers, key;	
 }

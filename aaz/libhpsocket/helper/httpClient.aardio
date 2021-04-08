@@ -66,3 +66,7 @@ checkWsUpgradeResponse = function(component, getWsUpgradeRequestKey){
 	var requestKey = getWsUpgradeRequestKey(component);
 	if( wsHelper.getSecAccept(requestKey) == acceptKey ) return true;
 }
+
+sendWsPong = function(component, mask){
+	component.sendWsMessage(null, 0xA, mask);
+}

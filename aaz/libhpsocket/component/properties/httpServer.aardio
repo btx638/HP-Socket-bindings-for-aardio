@@ -70,36 +70,34 @@ sendChunkData = function(connID, pData, len=0, extensions){
 }
 
 sendWsMessage = function(connId, data, opCode, final=true, bodyLen=0, reserved){
-	var len;
-	if( data[["_struct"]] ){
+	var len = 0;
+	if(data[["_struct"]]){
 		len = ..raw.sizeof(data);
 		opCode = 2;
 	}
-	elseif( type(data) == type.string ){
+	elseif(type(data) == type.string){
 		len = #data;
 		opCode = 1;
 	}
-	else {
-		error("sendWsMessage 参数2 data 格式有误",2)
-	}
+
+	if(data) data = realloc(len, null, data); 
 	
-    var pData = realloc(len, null, data); 
-	var r = _dll.HP_HttpServer_SendWSMessageB( 
+	var ret = _dll.HP_HttpServer_SendWSMessageB( 
 		owner.pSocket, 
 		connId, 
 		final, 
 		reserved, 
 		opCode, 
-		pData, 
+		data, 
 		len, 
 		..math.size64(len + bodyLen) 
 	);
-	realloc(0, pData);
-	return r;
+    if(data) data = realloc(0, data);
+	return ret;
 }
 
-release = function( connId ){
-	return _dll.HP_HttpServer_ReleaseB( owner.pSocket,connId );
+release = function(connId){
+	return _dll.HP_HttpServer_ReleaseB(owner.pSocket,connId);
 }
 
 getUrlFieldSet = function(connId){

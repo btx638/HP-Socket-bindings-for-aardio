@@ -1,197 +1,60 @@
 ﻿import util.metaProperty;
 import inet.url;
-import aaz.libhpsocket.listener.httpClient;
-import aaz.libhpsocket.component.httpClient;
-import aaz.libhpsocket.helper.httpClient;
-import aaz.libhpsocket.helper.extra;
 
 namespace aaz.libhpsocket.app;
 class simpleWebsocketClient{
 	ctor(){
-		var listener = ..aaz.libhpsocket.listener.httpClient();
-		var component = ..aaz.libhpsocket.component.httpClient(listener);
-		this.__handler__ = {};
-			
-		..table.gc(this, "close");
-	};
-	close = function(){
-		component.stop();
-		listener.destroy();		
-	};
-	disconnect = function(){
-		return component.stop();
-	};
-	_connect = function(host, port){
-		if(!this.path){
-			this.path = "/";
-		}
-		var userdata = newUserdata(this.path, this.origin);
-		component.extra = userdata.extra;
-		return component.start(host, port);
+		this.ws = ..aaz.libhpsocket.app.simpleWebsocketClient.ws();
+		this.wss = ..aaz.libhpsocket.app.simpleWebsocketClient.wss();
 	};
 	connect = function(url){
-		var uri = ..inet.url.split(url);
-		this.path = uri.path;
-		return this._connect(uri.host, uri.port);
+		var t = ..inet.url.split(url);
+		if(t.scheme == "ws" || t.scheme == "wss"){
+			this.scheme = t.scheme;
+			return this[t.scheme].connect(url); 
+		}
 	};
 	send = function(msg){
-		return component.sendWsMessage(msg);
+		return this[this.scheme].send(msg); 
 	};
-	listen = function(){
-		if(this.started) return ; 
-		else this.started = true;
-		
-		listener.threadGlobal = {
-			__handler__ = this.__handler__;
-			__onThreadCreated__ = this.onThreadCreated;
-		}
-
-		listener.onThreadCreated = function(){
-			import aaz.libhpsocket.app.simpleWebsocketClient;
-			if __onThreadCreated__ __onThreadCreated__();
-		}
-
-		listener.onHandShake = function(component, connId){
-			aaz.libhpsocket.app.simpleWebsocketClient.sendWsUpgradeRequest(component);
-		}
-		
-		listener.onUpgrade = function(component, connId, upgradeType){
-			if(1!= upgradeType){
-				return 2; 
-			}
-			if(!aaz.libhpsocket.app.simpleWebsocketClient.checkWsUpgradeResponse(component)){
-				return 2; 
-			}
-			if __handler__.onOpen __handler__.onOpen();
-		}
-		
-		listener.onWsMessageHeader = function(component, connId, final, reserved, opCode, mask, bodyLen){
-			aaz.libhpsocket.app.simpleWebsocketClient.onWsMessageHeader(component, connId, final, reserved, opCode, mask, bodyLen);
-		}
-		
-		listener.onWsMessageBody = function(component, connId, pData, len){
-			aaz.libhpsocket.app.simpleWebsocketClient.onWsMessageBody(component, pData, len);	
-		}
-		
-		listener.onWsMessageComplete = function(component, connId){
-			var msg = aaz.libhpsocket.app.simpleWebsocketClient.onWsMessageComplete(component);
-			if(msg){
-				if __handler__.onMessage __handler__.onMessage(msg);
-			}
-		}
-		
-		listener.onClose = function(component,connId,enOperation,errCode){
-			aaz.libhpsocket.app.simpleWebsocketClient.onClose(component);
-			if __handler__.onClose __handler__.onClose();
-		}	
-	}
-	
 	@_metaProperty;	
 }
 namespace simpleWebsocketClient{
-    _metaProperty = ..util.metaProperty(
+    namespace ..global{
+		import aaz.libhpsocket.app.simpleWebsocketClient.ws;
+		import aaz.libhpsocket.app.simpleWebsocketClient.wss;
+    }
+    
+   _metaProperty = ..util.metaProperty(
 		onOpen = {
 			_set = function(v){
-				owner.__handler__.onOpen = v;
+				owner.ws.__handler__.onOpen = v;
+				owner.wss.__handler__.onOpen = v;
 			}
 		};
 		onClose = {
 			_set = function(v){
-				owner.__handler__.onClose = v;
+				owner.ws.__handler__.onClose = v;
+				owner.wss.__handler__.onClose = v;
 			}
 		};
 		onMessage = {
 			_set = function(v){
-				owner.__handler__.onMessage = v;
+				owner.ws.__handler__.onMessage = v;
+				owner.wss.__handler__.onMessage = v;
+			}
+		};
+		origin = {
+			_set = function(v){
+				owner.ws.origin = v;
+				owner.wss.origin = v;
+			}
+		}
+		onThreadCreated = {
+			_set = function(v){
+				owner.ws.onThreadCreated = v;
+				owner.wss.onThreadCreated = v;
 			}
 		}
     );
-    
-	class userdata{
-		ctor(wsPath="/", origin){
-			this.wsPath = wsPath;
-			this.origin = origin;
-		}
-		byte wsPath[100];
-		byte wsKey[24];
-		byte origin[50];
-		pointer wsMessage;
-		@_metaProperty;
-	}
-	userdata._metaProperty = ..util.metaProperty(
-		reallocWsMessage = function(len){
-			owner.wsMessage = ..raw.realloc(len, owner.wsMessage, "");  
-		};
-		concatWsMessage = function(pData, len){
-			owner.wsMessage = ..raw.concat(owner.wsMessage, pData, len);
-		};
-		getWsMessage = function(){
-			return ..raw.tostring(owner.wsMessage, 1, ..raw.sizeof(owner.wsMessage)); 	
-		};
-		freeWsMessage = function(){
-			if(owner.wsMessage){
-				owner.wsMessage = ..raw.realloc(0, owner.wsMessage);
-			}
-		};
-	)
-	
-	newUserdata = function(wsPath, origin){
-		return ..aaz.libhpsocket.helper.extra(userdata(wsPath, origin));
-	}
-
-	var getUserdata = function(component){
-		return ..aaz.libhpsocket.helper.extra(userdata(), component.extra);	
-	}
-	
-	var getWsUpgradeRequestKey = function(component){
-    	return getUserdata(component).wsKey;; 
-	}
-	
-	var saveWsUpgradeRequestKey = function(component, wsKey){
-		var userdata = getUserdata(component);
-		userdata.wsKey = wsKey;
-		userdata.save();
-	}
-	
-	sendWsUpgradeRequest = function(component){
-		var userData = getUserdata(component);
-		var wsPath = userData.wsPath;
-		var baseHeaders;
-		var origin = userData.origin;
-		if(origin){
-			baseHeaders = {
-				["Origin"] = origin;
-			}
-		}
-		return ..aaz.libhpsocket.helper.httpClient.sendWsUpgradeRequest(component, wsPath, baseHeaders, saveWsUpgradeRequestKey);
-	};
-	checkWsUpgradeResponse = function(component){
-		return ..aaz.libhpsocket.helper.httpClient.checkWsUpgradeResponse(component, getWsUpgradeRequestKey);
-	};
-	onWsMessageHeader = function(component, connId, final, reserved, opCode, mask, bodyLen){
-		var userData = getUserdata(component);
-		userData.reallocWsMessage(bodyLen);
-		userData.save();
-	};
-	onWsMessageBody = function(component, pData, len){
-		if(!component.extra){
-			return ; 
-		}
-		var userData = getUserdata(component);
-		userData.concatWsMessage(pData, len);
-		userData.save();
-	};
-	onWsMessageComplete = function(component){
-		if(!component.extra){
-			return ; 
-		}
-		var userData = getUserdata(component);
-		return userData.getWsMessage();
-	};
-	onClose = function(component){
-		var data = getUserdata(component);
-		data.freeWsMessage();
-		data.free();
-		component.extra = null;
-	};
 }

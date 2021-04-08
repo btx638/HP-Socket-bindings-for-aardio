@@ -129,37 +129,31 @@ sendConnect = function(connId, host, headers){
 }
 
 sendWsMessage = function(connId, data, opCode, final=true, mask='\x01\x02\x03\x04', bodyLen=0, reserved){
-	var len;
+	var len = 0;
 	if(data[["_struct"]]){
 		len = ..raw.sizeof(data);
-		if(opCode === null){
-			opCode = 2;
-		}
+		opCode = 2;
 	}
 	elseif(type(data) == type.string){
 		len = #data;
-		if( opCode === null ){
-			opCode = 1;
-		}
-	}
-	else {
-		error("sendWsMessage 格式有误", 2);
+		opCode = 1;
 	}
 
-	var pData = ..raw.realloc(len, null, data);
-	var r = _dll.HP_HttpAgent_SendWSMessageB(
+	if(data) data = realloc(len, null, data); 
+	
+	var ret = _dll.HP_HttpAgent_SendWSMessageB(
 		owner.pAgent,
 		connId,
 		final,
 		reserved,
 		opCode,
 		mask,
-		pData, 
+		data, 
 		len, 
-		..math.size64(len+bodyLen));
-	
-	..raw.realloc(0, pData);
-	return r;
+		..math.size64(len + bodyLen));
+		
+    if(data) data = realloc(0, data);	
+	return ret;
 }
 
 startHttp = function(connId){
@@ -214,7 +208,7 @@ getParseErrorCode = function(connId){
 
 getHeader = function(connId, name){
 	var value = {string value};
-	_dll.HP_HttpAgent_GetHeaderB(owner.pAgent, connId, name, value);
+	_dll.HP_HttpAgent_GetHeader(owner.pAgent, connId, name, value);
 	return value.value;
 }
 
@@ -226,7 +220,7 @@ getHeaders = function(connId, name){
 		return null;
 	}
 	
-	_dll.HP_HttpAgent_GetHeadersB(owner.pAgent, connId, name, values, values.array);
+	_dll.HP_HttpAgent_GetHeaders(owner.pAgent, connId, name, values, values.array);
 	return values.array;
 }
 
@@ -238,7 +232,7 @@ getAllHeaders = function(connId){
 		return null; 
 	}
 	
-	_dll.HP_HttpAgent_GetAllHeadersB(owner.pAgent, connId, headers.struct(), headers.array);
+	_dll.HP_HttpAgent_GetAllHeaders(owner.pAgent, connId, headers.struct(), headers.array);
 	return headers.array;
 }
 
@@ -250,7 +244,7 @@ getAllHeaderNames = function(connId){
 		return null; 
 	}
 	
-	_dll.HP_HttpAgent_GetAllHeaderNamesB(owner.pAgent, connId, names, names.array);
+	_dll.HP_HttpAgent_GetAllHeaderNames(owner.pAgent, connId, names, names.array);
 	return names.array;
 }
 
@@ -268,7 +262,7 @@ getAllCookies = function(connId){
 		return null;
 	}
 	
-	_dll.HP_HttpAgent_GetAllCookiesB(owner.pAgent, connId, cookies, cookies.array);
+	_dll.HP_HttpAgent_GetAllCookies(owner.pAgent, connId, cookies, cookies.array);
 	return cookies.array;
 }
 
